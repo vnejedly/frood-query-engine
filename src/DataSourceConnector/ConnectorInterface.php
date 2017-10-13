@@ -14,4 +14,9 @@ interface ConnectorInterface
      * @throws FieldNameException
      */
     public function applyQuery(Query $query);
+
+    /**
+     * @param Query $query
+     */
+    public function applyPager(Query $query);
 }

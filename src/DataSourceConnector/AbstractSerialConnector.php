@@ -3,7 +3,6 @@ namespace Hooloovoo\QueryEngine\DataSourceConnector;
 
 use Hooloovoo\QueryEngine\DataSourceConnector\Exception\FieldNameException;
 use Hooloovoo\QueryEngine\Filter;
-use Hooloovoo\QueryEngine\Pager;
 use Hooloovoo\QueryEngine\Query\Param\FilterParam;
 use Hooloovoo\QueryEngine\Query\Param\SorterParam;
 use Hooloovoo\QueryEngine\Query\Query;
@@ -22,7 +21,6 @@ abstract class AbstractSerialConnector extends AbstractConnector
     {
         $this->applyFilter($query->getFilter());
         $this->applySorter($query->getSorter());
-        $this->applyPager($query->getPager());
     }
 
     /**
@@ -58,9 +56,4 @@ abstract class AbstractSerialConnector extends AbstractConnector
      * @throws FieldNameException
      */
     abstract protected function applySorterParam(SorterParam $param);
-
-    /**
-     * @param Pager $pager
-     */
-    abstract protected function applyPager(Pager $pager);
 }
