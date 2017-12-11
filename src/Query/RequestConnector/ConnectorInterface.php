@@ -9,6 +9,11 @@ use Hooloovoo\QueryEngine\Query\RequestConnector\Exception\NoParamException;
 interface ConnectorInterface
 {
     /**
+     * @param int $limit
+     */
+    public function setDefaultLimit(int $limit);
+
+    /**
      * @return mixed
      * @throws NoParamException
      */
