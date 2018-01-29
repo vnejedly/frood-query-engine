@@ -14,10 +14,18 @@ use Hooloovoo\QueryEngine\Pager;
 class Query
 {
     /** @var RequestConnector */
-    private $requestConnector;
+    protected $requestConnector;
 
     /** @var ParserInterface */
-    private $parser;
+    protected $parser;
+
+    /** @var bool */
+    protected $suppressFilter = false;
+
+    /** @var string[] */
+    protected $suppressedFilterParams = [];
+
+
 
     /**
      * Query constructor.
@@ -38,6 +46,10 @@ class Query
     {
         $filter = new Filter();
 
+        if ($this->suppressFilter) {
+            return $filter;
+        }
+
         try {
             $rawFilter = $this->requestConnector->getRawFilter();
         } catch (NoParamException $exception) {
@@ -45,7 +57,9 @@ class Query
         }
 
         foreach ($this->parser->getFilterParams($rawFilter) as $param) {
-            $filter->addParam($param);
+            if (!array_key_exists($param->getName(), $this->suppressedFilterParams)) {
+                $filter->addParam($param);
+            }
         }
 
         return $filter;
@@ -82,5 +96,48 @@ class Query
         $pager->setLimit($this->parser->getLimit($this->requestConnector->getRawLimit()));
 
         return $pager;
+    }
+
+    /**
+     * @param string $filterParamName
+     * @return bool
+     */
+    protected function isSuppressed(string $filterParamName) : bool
+    {
+        return array_key_exists($filterParamName, $this->suppressedFilterParams);
+    }
+
+    /**
+     * @param bool $suppress
+     */
+    public function suppressFilter(bool $suppress = true)
+    {
+        $this->suppressFilter = $suppress;
+    }
+
+    /**
+     * @param string $paramName
+     */
+    public function suppressFilterParam(string $paramName)
+    {
+        $this->suppressedFilterParams[$paramName] = true;
+    }
+
+    /**
+     * @param string $paramName
+     */
+    public function unSuppressFilterParam(string $paramName)
+    {
+        if ($this->isSuppressed($paramName)) {
+            unset($this->suppressedFilterParams[$paramName]);
+        }
+    }
+
+    /**
+     * Un-suppresses all filter params
+     */
+    public function unSuppressFilterParams()
+    {
+        $this->suppressedFilterParams = [];
     }
 }
