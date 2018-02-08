@@ -1,6 +1,8 @@
 <?php
 namespace Hooloovoo\QueryEngine\Query;
 
+use Hooloovoo\QueryEngine\Query\Param\FilterParam;
+use Hooloovoo\QueryEngine\Query\Param\SorterParam;
 use Hooloovoo\QueryEngine\Query\RequestConnector\Exception\NoParamException;
 use Hooloovoo\QueryEngine\Query\RequestConnector\ConnectorInterface as RequestConnector;
 use Hooloovoo\QueryEngine\Query\Parser\ParserInterface;
@@ -25,7 +27,11 @@ class Query
     /** @var string[] */
     protected $suppressedFilterParams = [];
 
-
+    /** @var SorterParam[] */
+    protected $emptySorterParams = [];
+    
+    /** @var FilterParam[] */
+    protected $defaultFilterParams = [];
 
     /**
      * Query constructor.
@@ -45,6 +51,10 @@ class Query
     public function getFilter() : Filter
     {
         $filter = new Filter();
+        
+        foreach ($this->defaultFilterParams as $param) {
+            $filter->addParam($param);
+        }
 
         if ($this->suppressFilter) {
             return $filter;
@@ -75,6 +85,10 @@ class Query
         try {
             $rawSorter = $this->requestConnector->getRawSorter();
         } catch (NoParamException $exception) {
+            foreach ($this->emptySorterParams as $param) {
+                $sorter->addParam($param);
+            }
+            
             return $sorter;
         }
 
@@ -105,6 +119,22 @@ class Query
     protected function isSuppressed(string $filterParamName) : bool
     {
         return array_key_exists($filterParamName, $this->suppressedFilterParams);
+    }
+
+    /**
+     * @param FilterParam $filterParam
+     */
+    public function addDefaultFilterParam(FilterParam $filterParam)
+    {
+        $this->defaultFilterParams[] = $filterParam;
+    }
+
+    /**
+     * @param SorterParam $sorterParam
+     */
+    public function addEmptySorterParam(SorterParam $sorterParam)
+    {
+        $this->emptySorterParams[] = $sorterParam;
     }
 
     /**
